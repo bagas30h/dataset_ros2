@@ -33,14 +33,13 @@ def load_img_angular_velocity(datadir, df):
     angular_velocity = []
     for i in range(len(df)):
         indexed_data = df.iloc[i]
-        # Select the center camera most of the time but occasionally others
-        camera_choice = 'center' if random.random() < 0.7 else random.choice(['left', 'right'])
+        camera_choice = 'center' if random.random() < 0.8 else random.choice(['left', 'right'])
         image_file = indexed_data[camera_choice]
-        correction = 0.0  # Steering correction
+        correction = 0.0
         if camera_choice == 'left':
-            correction = 0.25  # Adjust for left camera
+            correction = -0.15 # Adjust for left camera
         elif camera_choice == 'right':
-            correction = -0.25  # Adjust for right camera
+            correction = 0.15  # Adjust for right camera
             
         image_path.append(os.path.join(datadir, image_file.strip()))
         angular_velocity.append(float(indexed_data['angular_velocity']) + correction)
@@ -56,17 +55,16 @@ x_train, x_valid, y_train, y_valid = train_test_split(image_path, angular_veloci
 def img_preprocess(img):
     img = mpimg.imread(img)
     height = img.shape[0]
-    img = img[height - 135:height - 60, :, :]  # Crop image
+    img = img[height - 135:height - 60, :, :]
     img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
     img = cv2.GaussianBlur(img, (1, 1), 0)
-    img = cv2.resize(img, (200, 66))  # Resize to 200x66
+    img = cv2.resize(img, (200, 66))
     img = img / 255.0
     return img
 
 x_train = np.array([img_preprocess(img) for img in x_train])
 x_valid = np.array([img_preprocess(img) for img in x_valid])
 
-# Define the model
 def nvidia_model():
     model = Sequential()
     model.add(Conv2D(24, kernel_size=(5, 5), strides=(2, 2), input_shape=(66, 200, 3), activation='relu'))
@@ -91,10 +89,10 @@ model = nvidia_model()
 print(model.summary())
 
 # Train the model
-history = model.fit(x_train, y_train, epochs=40, validation_data=(x_valid, y_valid), batch_size=100, verbose=1, shuffle=True)
+history = model.fit(x_train, y_train, epochs=30, validation_data=(x_valid, y_valid), batch_size=100, verbose=1, shuffle=True)
 
 # Save the model
-model.save('model_with_cameras.h5')
+model.save('model_mobil_besar.h5')
 print('Model saved')
 
 # Prediksi pada data validasi
@@ -106,3 +104,24 @@ mae = mean_absolute_error(y_valid, y_pred)
 
 print(f"Mean Squared Error (MSE) on validation set: {mse}")
 print(f"Mean Absolute Error (MAE) on validation set: {mae}")
+
+# Plot training & validation loss values
+plt.plot(history.history['loss'])
+plt.plot(history.history['val_loss'])
+plt.title('Model loss')
+plt.ylabel('Loss')
+plt.xlabel('Epoch')
+plt.legend(['Train', 'Validation'], loc='upper right')
+plt.show()
+
+def visualize_predictions(y_true, y_pred):
+    plt.figure(figsize=(15, 5))
+    plt.plot(y_true, label='True Angular Velocity', color='blue')
+    plt.plot(y_pred, label='Predicted Angular Velocity', color='red')
+    plt.title('True vs Predicted Angular Velocity')
+    plt.xlabel('Sample Index')
+    plt.ylabel('Angular Velocity')
+    plt.legend()
+    plt.show()
+
+visualize_predictions(y_valid, y_pred)
