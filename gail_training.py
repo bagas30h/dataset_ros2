@@ -97,7 +97,7 @@ def add_random_shadow(image):
 def img_preprocess(img):
     img = mpimg.imread(img)
     height = img.shape[0]
-    img = img[height - 135:height - 60, :, :]  # Crop from the bottom to middle part
+    img = img[height//2:, :, :]  # Crop from the bottom to middle part
     img = cv2.cvtColor(img, cv2.COLOR_RGB2YUV)
     img = random_brightness(img)
     img = add_random_shadow(img)
@@ -186,7 +186,7 @@ model = cil_model_improved()
 print(model.summary())
 
 # Train the model
-history = model.fit(x_train, y_train, epochs=60, validation_data=(x_valid, y_valid), batch_size=100, verbose=1, shuffle=True)
+history = model.fit(x_train, y_train, epochs=30, validation_data=(x_valid, y_valid), batch_size=100, verbose=1, shuffle=True)
 
 # Save the model
 model.save('model_mobil_bes.h5')

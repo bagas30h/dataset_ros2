@@ -19,17 +19,14 @@ def downsample_data(x, y, factor=10):
 # Baca jalur teleoperation, otonom, dan path ketiga
 teleop_x, teleop_y = read_path_from_csv('robot_path2.csv')
 autonomous_x, autonomous_y = read_path_from_csv('robot_path.csv')
-third_path_x, third_path_y = read_path_from_csv('robot_path3.csv')
 
 # Cek ukuran data yang dibaca
 print(f'Teleoperation Path Size: {len(teleop_x)}')
 print(f'Autonomous Path Size: {len(autonomous_x)}')
-print(f'Autonomous without dropout Size: {len(third_path_x)}')
 
 # Downsampling data untuk visualisasi
 teleop_x, teleop_y = downsample_data(teleop_x, teleop_y, factor=10)
 autonomous_x, autonomous_y = downsample_data(autonomous_x, autonomous_y, factor=10)
-third_path_x, third_path_y = downsample_data(third_path_x, third_path_y, factor=10)
 
 # Visualisasi jalur
 plt.figure(figsize=(10, 8))
@@ -44,12 +41,8 @@ if not autonomous_x.empty and not autonomous_y.empty:
 else:
     print("Autonomous Path is empty!")
 
-if not third_path_x.empty and not third_path_y.empty:
-    plt.plot(third_path_x, third_path_y, label='Autonomous without dropout', color='red', alpha=0.5)
-else:
-    print("Third Path is empty!")
 
-plt.title('Comparison of Teleoperation, Autonomous, and Third Paths (Downsampled)')
+plt.title('Comparison of Teleoperation, Autonomous (Downsampled)')
 plt.xlabel('X Position')
 plt.ylabel('Y Position')
 plt.legend()
